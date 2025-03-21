@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ⚠️ ВАЖНОЕ ИЗМЕНЕНИЕ: обработка multipart/form-data до multer
+// обработка multipart/form-data до multer
 // Мы НЕ используем эти middleware для multipart/form-data, так как multer сам их обрабатывает
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
@@ -52,15 +52,24 @@ const storage = multer.diskStorage({
         if (!directory) {
             return cb(new Error('Directory parameter is missing'));
         }
-        
+
         // Проверим, что директория существует
-        const targetDir = path.join(TARGETS_DIR, directory);
-        console.log('Full target path:', targetDir);
-        
-        if (!fs.existsSync(targetDir)) {
-            return cb(new Error(`Target directory "${directory}" does not exist`));
+        const targetDir = path.normalize(path.join(TARGETS_DIR, directory));
+        if (!targetDir.startsWith(TARGETS_DIR)) {
+            return cb(new Error('Invalid directory path'));
         }
-        
+
+        try {
+            if (!fs.existsSync(targetDir)) {
+                return cb(new Error(`Target directory "${directory}" does not exist`));
+            }
+            if (!fs.statSync(targetDir).isDirectory()) {
+                return cb(new Error(`Target path "${directory}" is not a directory`));
+            }
+        } catch (error) {
+            return cb(error);
+        }
+
         cb(null, targetDir);
     },
     filename: function (req, file, cb) {
@@ -79,20 +88,27 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// ⚠️ ВАЖНОЕ ИЗМЕНЕНИЕ: Настраиваем multer для обработки полей формы
+// Настраиваем multer для обработки полей формы
 const upload = multer({ 
     storage: storage,
-    fileFilter: fileFilter 
+    fileFilter: fileFilter
 }).single('torrent');
 
-// Эндпоинт 1: Список поддиректорий
+// Список поддиректорий
 app.get('/api/dirs', (req, res) => {
     try {
-        const items = fs.readdirSync(TARGETS_DIR, { withFileTypes: true });
-        const dirs = items
+        const targets = fs.readdirSync(TARGETS_DIR, { withFileTypes: true })
             .filter(item => item.isDirectory())
-            .map(dir => ({ name: dir.name }));
-        
+            .map(dir => dir.name);
+
+        const dirs = [];
+        for (const target of targets) {
+            const subDirs = fs.readdirSync(path.join(TARGETS_DIR, target), { withFileTypes: true })
+                .filter(item => item.isDirectory())
+                .map(subDir => ({ name: path.join(target, subDir.name) }));
+            dirs.push(...subDirs);
+        }
+
         res.json(dirs);
     } catch (error) {
         console.error('Error reading directories:', error);
@@ -100,29 +116,29 @@ app.get('/api/dirs', (req, res) => {
     }
 });
 
-// ⚠️ ВАЖНОЕ ИЗМЕНЕНИЕ: Эндпоинт 2: Загрузка торрент-файла с обработкой ошибок
+// Загрузка торрент-файла с обработкой ошибок
 app.post('/api/upload', (req, res) => {
-    upload(req, res, function(err) {
+    upload(req, res, function (err) {
         if (err) {
             console.error('Upload error:', err);
             return res.status(400).json({ error: err.message });
         }
-        
+
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded or invalid file type' });
         }
-        
+
         if (!req.body.directory) {
             return res.status(400).json({ error: 'Directory parameter is required' });
         }
-        
+
         console.log('File uploaded successfully:', {
             filename: req.file.originalname,
             directory: req.body.directory,
             path: req.file.path
         });
-        
-        res.json({ 
+
+        res.json({
             message: 'File uploaded successfully',
             filename: req.file.originalname,
             directory: req.body.directory
@@ -133,7 +149,7 @@ app.post('/api/upload', (req, res) => {
 // Для отладки: эндпоинт, который просто возвращает полученные данные
 app.post('/api/test-upload', (req, res) => {
     console.log('Test upload body:', req.body);
-    res.json({ 
+    res.json({
         received: true,
         body: req.body
     });

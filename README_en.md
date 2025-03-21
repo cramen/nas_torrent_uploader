@@ -1,3 +1,4 @@
+
 # Torrent Uploader
 
 Torrent Uploader is a tool for convenient downloading of torrent files directly from trackers to your NAS (Network Attached Storage).
@@ -37,12 +38,14 @@ services:
     ports:
       - "3300:3000"
     volumes:
-      - /path/to/your/torrent/folders:/targets
+      - /host/dir1:/targets/dir1
+      - /host/dir2:/targets/dir2
+      - /host/dir3:/targets/dir3
     environment:
       - PORT=3000
 ```
 
-3. Replace `/path/to/your/torrent/folders` with the actual path to directories on your NAS where torrent folders are stored.
+3. Replace `/host/dir1`, `/host/dir2`, `/host/dir3` with the actual paths to directories on your NAS where torrent folders are stored. You can specify as many directories as needed.
 
 4. Build and start the Docker container:
 
@@ -82,7 +85,7 @@ After installing the plugin, you need to configure your NAS address:
 2. Find the desired torrent
 3. Next to the torrent download link, you'll see an "Upload to NAS" button
 4. Click this button
-5. Select the destination directory on your NAS in the dialog window
+5. Select the destination directory on your NAS (e.g., `dir1/sub1`) from the list of available subdirectories in the dialog window
 6. Click "Upload"
 7. You'll see a notification after successful upload
 
@@ -90,5 +93,6 @@ After installing the plugin, you need to configure your NAS address:
 
 - Your NAS must be accessible over the network from the computer where the plugin is installed
 - By default, the server uses port 3300; if you change it, remember to update the settings in the plugin
-- For proper operation, the directories where you plan to upload torrents must exist on your NAS
-- To automatically add uploaded torrents to your torrent client on the NAS, configure directory monitoring in your torrent client
+- For proper operation, the directories specified in `docker-compose.yml` must exist on your NAS
+- To automatically add uploaded torrents to your torrent client on the NAS, configure directory monitoring for the mounted directories in your torrent client
+- The client now supports relative paths (e.g., `dir1/sub1`), allowing selection of subdirectories from multiple mounted directories
