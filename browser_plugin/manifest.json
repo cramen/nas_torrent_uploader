@@ -8,14 +8,15 @@
     "storage"
   ],
   "host_permissions": [
-    "*://*.rutracker.org/*",
-    "http://tnas.local:3300/*",
     "http://*/*",
     "https://*/*"
   ],
   "content_scripts": [
     {
-      "matches": ["*://*.rutracker.org/*"],
+      "matches": [
+        "*://*.rutracker.org/*",
+        "*://*.nnmclub.to/*"
+      ],
       "js": ["content.js"]
     }
   ],

@@ -1,13 +1,39 @@
 // Функция для создания кнопки загрузки
 function addUploadButtons() {
-  // Находим все ссылки для скачивания торрентов
-  const torrentLinks = document.querySelectorAll('a[href] img[src*="attach_big.gif"]');
+  // 1. Находим все ссылки для скачивания торрентов на rutracker
+  const rutrackerLinks = document.querySelectorAll('a[href] img[src*="attach_big.gif"]');
   
-  torrentLinks.forEach(img => {
-    const link = img.closest('a');
-    
+  // 2. Находим ссылки с изображениями pdltor.gif на nnmclub
+  const nnmclubImageLinks = document.querySelectorAll('a[href] img[src*="pdltor.gif"]');
+  
+  // 3. Находим текстовые ссылки "Скачать" на nnmclub
+  const nnmclubTextLinks = document.querySelectorAll('a[href]');
+  
+  // Обработка ссылок rutracker
+  processLinks(rutrackerLinks);
+  
+  // Обработка ссылок nnmclub с изображениями
+  processLinks(nnmclubImageLinks);
+  
+  // Обработка текстовых ссылок nnmclub
+  nnmclubTextLinks.forEach(link => {
+    if (link.textContent.trim() === 'Скачать') {
+      processLink(link);
+    }
+  });
+  
+  function processLinks(elements) {
+    elements.forEach(element => {
+      const link = element.closest('a');
+      if (link) {
+        processLink(link);
+      }
+    });
+  }
+  
+  function processLink(link) {
     // Проверяем, не добавили ли мы уже кнопку
-    if (link && !link.nextElementSibling?.classList?.contains('upload-to-nas-btn')) {
+    if (!link.nextElementSibling?.classList?.contains('upload-to-nas-btn')) {
       // Создаем кнопку
       const uploadButton = document.createElement('button');
       uploadButton.textContent = 'Загрузить на NAS';
@@ -34,7 +60,7 @@ function addUploadButtons() {
       // Добавляем кнопку после ссылки
       link.parentNode.insertBefore(uploadButton, link.nextSibling);
     }
-  });
+  }
 }
 
 // Функция создания модального окна с выпадающим списком директорий
