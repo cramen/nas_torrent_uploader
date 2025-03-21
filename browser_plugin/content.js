@@ -241,9 +241,9 @@ async function handleTorrentUpload(torrentUrl) {
 
     // Определяем имя файла
     let filename = 'download.torrent';
-    const match = torrentUrl.match(/[?&]t=(\d+)/);
-    if (match && match[1]) {
-      filename = `${match[1]}.torrent`;
+    const match = torrentUrl.match(/[?&](t|id)=(\d+)/);
+    if (match && match[2]) {
+      filename = `${match[2]}.torrent`;
     }
 
     statusMsg.textContent = 'Отправка на сервер...';
