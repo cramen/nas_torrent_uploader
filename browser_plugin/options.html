@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Настройки Torrent Uploader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #4285f4;
+      margin-top: 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .save-btn {
+      background-color: #4285f4;
+      color: white;
+    }
+    .reset-btn {
+      background-color: #f5f5f5;
+      color: #333;
+      border: 1px solid #ddd;
+    }
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .status.success {
+      display: block;
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status.error {
+      display: block;
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Настройки Torrent Uploader</h1>
+    <div class="form-group">
+      <label for="dirsUrl">URL для получения списка директорий:</label>
+      <input type="text" id="dirsUrl" placeholder="http://tnas.local:3300/api/dirs">
+    </div>
+    <div class="form-group">
+      <label for="uploadUrl">URL для загрузки торрент-файлов:</label>
+      <input type="text" id="uploadUrl" placeholder="http://tnas.local:3300/api/upload">
+    </div>
+    <div class="buttons">
+      <button id="resetBtn" class="reset-btn">Восстановить по умолчанию</button>
+      <button id="saveBtn" class="save-btn">Сохранить</button>
+    </div>
+    <div id="status" class="status"></div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

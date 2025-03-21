@@ -1,0 +1,12 @@
+version: '3'
+services:
+  torrent-uploader:
+    build: .
+    container_name: torrent-uploader
+    restart: unless-stopped
+    ports:
+      - "3300:3000"
+    volumes:
+      - /путь/к/вашим/торрент/папкам:/targets
+    environment:
+      - PORT=3000

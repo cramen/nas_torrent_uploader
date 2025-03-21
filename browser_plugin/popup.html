@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    h2 {
+      margin-top: 0;
+      color: #4285f4;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .footer {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+    }
+    .settings-link {
+      color: #4285f4;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .settings-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h2>Torrent Uploader</h2>
+  <p>Загрузка торрент-файлов на ваш сервер.</p>
+  
+  <h3>Как использовать:</h3>
+  <ol>
+    <li>Найдите нужный торрент на трекере</li>
+    <li>Нажмите кнопку "Загрузить на NAS" рядом со ссылкой скачивания</li>
+    <li>Выберите директорию для сохранения</li>
+  </ol>
+  
+  <div class="footer">
+    <span>Версия 1.0</span>
+    <a id="settingsLink" class="settings-link">Настройки</a>
+  </div>
+  
+  <!-- Подключаем отдельный файл JavaScript -->
+  <script src="popup.js"></script>
+</body>
+</html>
