@@ -1,36 +1,47 @@
 // Функция для создания кнопки загрузки
 function addUploadButtons() {
-  // 1. Находим все ссылки для скачивания торрентов на rutracker
-  const rutrackerLinks = document.querySelectorAll('a[href] img[src*="attach_big.gif"]');
-  
-  // 2. Находим ссылки с изображениями pdltor.gif на nnmclub
-  const nnmclubImageLinks = document.querySelectorAll('a[href] img[src*="pdltor.gif"]');
-  
-  // 3. Находим текстовые ссылки "Скачать" на nnmclub
-  const nnmclubTextLinks = document.querySelectorAll('a[href]');
-  
-  // Обработка ссылок rutracker
-  processLinks(rutrackerLinks);
-  
-  // Обработка ссылок nnmclub с изображениями
-  processLinks(nnmclubImageLinks);
-  
-  // Обработка текстовых ссылок nnmclub
-  nnmclubTextLinks.forEach(link => {
-    if (link.textContent.trim() === 'Скачать') {
-      processLink(link);
-    }
-  });
-  
-  function processLinks(elements) {
+  // Массив селекторов для различных торрент-сайтов
+  const selectors = [
+    // Rutracker селекторы
+    {
+      selector: 'a[href] img[src*="attach_big.gif"]',
+      type: 'elementInLink'  // Элемент внутри ссылки
+    },
+
+    // NNMClub селекторы
+    {
+      selector: 'a[href] img[src*="pdltor.gif"]',
+      type: 'elementInLink'  // Элемент внутри ссылки
+    },
+    {
+      selector: 'a[href*="download.php"]',
+      type: 'directLink'     // Прямая ссылка
+    },
+
+    // Можно легко добавить другие селекторы для других сайтов
+    // { selector: 'выражение', type: 'тип' },
+  ];
+
+  // Обрабатываем все селекторы
+  selectors.forEach(selectorObj => {
+    const elements = document.querySelectorAll(selectorObj.selector);
+
     elements.forEach(element => {
-      const link = element.closest('a');
-      if (link) {
+      let link;
+
+      // Определяем ссылку в зависимости от типа селектора
+      if (selectorObj.type === 'elementInLink') {
+        link = element.closest('a');
+      } else if (selectorObj.type === 'directLink') {
+        link = element;
+      }
+
+      if (link && link.href) {
         processLink(link);
       }
     });
-  }
-  
+  });
+
   function processLink(link) {
     // Проверяем, не добавили ли мы уже кнопку
     if (!link.nextElementSibling?.classList?.contains('upload-to-nas-btn')) {
@@ -48,15 +59,15 @@ function addUploadButtons() {
         cursor: pointer;
         font-size: 12px;
       `;
-      
+
       // Добавляем обработчик события
       uploadButton.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         await handleTorrentUpload(link.href);
       });
-      
+
       // Добавляем кнопку после ссылки
       link.parentNode.insertBefore(uploadButton, link.nextSibling);
     }
