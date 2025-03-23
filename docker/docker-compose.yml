@@ -12,3 +12,4 @@ services:
       - /путь/к/вашим/торрент/папкам:/targets/dir3
     environment:
       - PORT=3000
+      - TOKEN=your_secret_token_here

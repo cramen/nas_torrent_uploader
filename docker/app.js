@@ -14,41 +14,39 @@ if (!fs.existsSync(TARGETS_DIR)) {
     console.log(`Created directory ${TARGETS_DIR}`);
 }
 
-// Добавляем CORS для работы с расширением
+// Добавляем middleware для проверки токена
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  
-  // Обработка preflight запросов
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  next();
+    const token = req.query.token;
+    if (!token || token !== process.env.TOKEN) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
 });
 
-// обработка multipart/form-data до multer
-// Мы НЕ используем эти middleware для multipart/form-data, так как multer сам их обрабатывает
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-
-// Создаем функцию логирования для отладки запросов
+// Настройка CORS
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  console.log('Headers:', req.headers);
-  next();
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
 });
 
-// Настройка multer для загрузки файлов
+// Логирование запросов
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    console.log('Headers:', req.headers);
+    next();
+});
+
+// Настройка multer
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // ⚠️ ВАЖНОЕ ИЗМЕНЕНИЕ: Получаем directory из поля формы
         console.log('Multer req.body:', req.body);
         const directory = req.body.directory;
-        
         console.log('Attempting to upload to directory:', directory);
-        
         if (!directory) {
             return cb(new Error('Directory parameter is missing'));
         }
@@ -58,7 +56,6 @@ const storage = multer.diskStorage({
         if (!targetDir.startsWith(TARGETS_DIR)) {
             return cb(new Error('Invalid directory path'));
         }
-
         try {
             if (!fs.existsSync(targetDir)) {
                 return cb(new Error(`Target directory "${directory}" does not exist`));
@@ -69,7 +66,6 @@ const storage = multer.diskStorage({
         } catch (error) {
             return cb(error);
         }
-
         cb(null, targetDir);
     },
     filename: function (req, file, cb) {
@@ -94,13 +90,12 @@ const upload = multer({
     fileFilter: fileFilter
 }).single('torrent');
 
-// Список поддиректорий
+// Эндпоинты
 app.get('/api/dirs', (req, res) => {
     try {
         const targets = fs.readdirSync(TARGETS_DIR, { withFileTypes: true })
             .filter(item => item.isDirectory())
             .map(dir => dir.name);
-
         const dirs = [];
         for (const target of targets) {
             const subDirs = fs.readdirSync(path.join(TARGETS_DIR, target), { withFileTypes: true })
@@ -108,7 +103,6 @@ app.get('/api/dirs', (req, res) => {
                 .map(subDir => ({ name: path.join(target, subDir.name) }));
             dirs.push(...subDirs);
         }
-
         res.json(dirs);
     } catch (error) {
         console.error('Error reading directories:', error);
@@ -123,35 +117,22 @@ app.post('/api/upload', (req, res) => {
             console.error('Upload error:', err);
             return res.status(400).json({ error: err.message });
         }
-
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded or invalid file type' });
         }
-
         if (!req.body.directory) {
             return res.status(400).json({ error: 'Directory parameter is required' });
         }
-
         console.log('File uploaded successfully:', {
             filename: req.file.originalname,
             directory: req.body.directory,
             path: req.file.path
         });
-
         res.json({
             message: 'File uploaded successfully',
             filename: req.file.originalname,
             directory: req.body.directory
         });
-    });
-});
-
-// Для отладки: эндпоинт, который просто возвращает полученные данные
-app.post('/api/test-upload', (req, res) => {
-    console.log('Test upload body:', req.body);
-    res.json({
-        received: true,
-        body: req.body
     });
 });
 
