@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Torrent Uploader",
-  "version": "1.3",
+  "version": "1.4",
   "description": "Загружает торрент-файлы с трекера в выбранную директорию на вашем сервере",
   "permissions": [
     "activeTab",
