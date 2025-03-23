@@ -5,10 +5,8 @@ const multer = require('multer');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Директория с целевыми папками
 const TARGETS_DIR = '/targets';
 
-// Проверка существования директории
 if (!fs.existsSync(TARGETS_DIR)) {
     fs.mkdirSync(TARGETS_DIR, { recursive: true });
     console.log(`Created directory ${TARGETS_DIR}`);
@@ -50,8 +48,6 @@ const storage = multer.diskStorage({
         if (!directory) {
             return cb(new Error('Directory parameter is missing'));
         }
-
-        // Проверим, что директория существует
         const targetDir = path.normalize(path.join(TARGETS_DIR, directory));
         if (!targetDir.startsWith(TARGETS_DIR)) {
             return cb(new Error('Invalid directory path'));
@@ -74,7 +70,6 @@ const storage = multer.diskStorage({
     }
 });
 
-// Фильтр файлов - только .torrent
 const fileFilter = (req, file, cb) => {
     console.log('Filtering file:', file.originalname);
     if (path.extname(file.originalname).toLowerCase() === '.torrent') {
@@ -84,8 +79,7 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Настраиваем multer для обработки полей формы
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     fileFilter: fileFilter
 }).single('torrent');
@@ -110,7 +104,6 @@ app.get('/api/dirs', (req, res) => {
     }
 });
 
-// Загрузка торрент-файла с обработкой ошибок
 app.post('/api/upload', (req, res) => {
     upload(req, res, function (err) {
         if (err) {
