@@ -75,7 +75,6 @@ docker-compose up -d
   POST /api/upload?token=your_secret_token_here
   ```
   Если токен отсутствует или не совпадает, сервер вернет ошибку 401 (`Unauthorized`).
-```
 
 # Плагин Torrent Uploader
 

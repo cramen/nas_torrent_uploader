@@ -75,7 +75,6 @@ To protect the API from unauthorized access, a token-based authentication mechan
   POST /api/upload?token=your_secret_token_here
   ```
   If the token is missing or incorrect, the server will return a 401 (`Unauthorized`) error.
-```
 
 # Torrent Uploader Plugin
 
