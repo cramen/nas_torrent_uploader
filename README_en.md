@@ -1,4 +1,3 @@
-
 # Torrent Uploader
 
 Torrent Uploader is a tool for convenient downloading of torrent files directly from trackers to your NAS (Network Attached Storage).
@@ -8,6 +7,8 @@ Torrent Uploader is a tool for convenient downloading of torrent files directly 
 The program consists of two components:
 1. **Server-side** — Docker container that runs on your NAS and receives uploaded torrent files
 2. **Browser plugin** — adds "Upload to NAS" buttons next to torrent download links on tracker websites
+
+**Important:** This tool only uploads torrent files to your NAS. To start downloading the actual torrents, you need to configure your torrent client (e.g., qBittorrent) to automatically pick up torrent files from the corresponding directories.
 
 ## Benefits
 
@@ -94,5 +95,5 @@ After installing the plugin, you need to configure your NAS address:
 - Your NAS must be accessible over the network from the computer where the plugin is installed
 - By default, the server uses port 3300; if you change it, remember to update the settings in the plugin
 - For proper operation, the directories specified in `docker-compose.yml` must exist on your NAS
-- To automatically add uploaded torrents to your torrent client on the NAS, configure directory monitoring for the mounted directories in your torrent client
+- To automatically add uploaded torrents to your torrent client on the NAS, configure directory monitoring for the mounted directories in your torrent client (e.g., qBittorrent)
 - The client now supports relative paths (e.g., `dir1/sub1`), allowing selection of subdirectories from multiple mounted directories
