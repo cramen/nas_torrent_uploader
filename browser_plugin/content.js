@@ -229,14 +229,23 @@ async function handleTorrentUpload(torrentUrl) {
     // Показываем сообщение о скачивании
     const statusMsg = document.createElement('div');
     statusMsg.textContent = 'Загрузка торрент-файла...';
-    statusMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #333; color: white; padding: 15px; border-radius: 5px; z-index: 9999;';
+    statusMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #4285f4; color: white; padding: 15px; border-radius: 5px; z-index: 9999; box-shadow: 0 2px 5px rgba(0,0,0,0.2);';
     document.body.appendChild(statusMsg);
 
-    // 3. Скачиваем торрент-файл через background script
-    const torrentResult = await sendMessageToBackground({ action: 'downloadTorrent', torrentUrl });
-
-    if (!torrentResult.success) {
-      throw new Error(`Не удалось скачать торрент-файл: ${torrentResult.error}`);
+    // 3. Скачиваем торрент-файл
+    // Сначала пробуем напрямую со страницы (same-origin: куки и Referer как у обычного
+    // клика пользователя — трекеры часто блокируют запросы из service worker'а).
+    // Если не вышло (например, CSP страницы) — через background script.
+    let torrentData;
+    try {
+      torrentData = await downloadTorrentFromPage(torrentUrl);
+    } catch (pageError) {
+      console.warn('Скачивание со страницы не удалось, пробуем через background:', pageError);
+      const torrentResult = await sendMessageToBackground({ action: 'downloadTorrent', torrentUrl });
+      if (!torrentResult.success) {
+        throw new Error(`Не удалось скачать торрент-файл: ${torrentResult.error}`);
+      }
+      torrentData = torrentResult.data;
     }
 
     // Определяем имя файла
@@ -251,7 +260,7 @@ async function handleTorrentUpload(torrentUrl) {
     // 4. Загружаем торрент-файл на сервер через background script
     const uploadResult = await sendMessageToBackground({
       action: 'uploadTorrent',
-      torrentData: torrentResult.data,
+      torrentData: torrentData,
       filename,
       directory: selectedDir
     });
@@ -275,6 +284,21 @@ async function handleTorrentUpload(torrentUrl) {
     console.error('Ошибка:', error);
     alert(`Произошла ошибка: ${error.message}`);
   }
+}
+
+// Скачивание торрент-файла из контекста страницы (same-origin, с куками и Referer)
+async function downloadTorrentFromPage(torrentUrl) {
+  const response = await fetch(torrentUrl, { credentials: 'include' });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  // Торрент-файл — это bencoded-словарь, он начинается с 'd'.
+  // Если пришёл HTML — значит трекер вернул страницу логина/ошибки.
+  if (bytes.length === 0 || bytes[0] !== 0x64) {
+    throw new Error('Трекер не отдал torrent-файл. Проверьте, что вы залогинены на сайте.');
+  }
+  return Array.from(bytes);
 }
 
 // Функция для отправки сообщений в background script

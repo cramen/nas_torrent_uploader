@@ -25,15 +25,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     } 
     else if (request.action === 'downloadTorrent') {
-        fetch(request.torrentUrl)
+        fetch(request.torrentUrl, { credentials: 'include' })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Failed to download torrent file');
+                    throw new Error('Failed to download torrent file (HTTP ' + response.status + ')');
                 }
                 return response.arrayBuffer();
             })
             .then(data => {
-                return sendResponse({ success: true, data: Array.from(new Uint8Array(data)) });
+                const bytes = new Uint8Array(data);
+                // Торрент-файл — это bencoded-словарь, он начинается с 'd'.
+                // Если пришёл HTML — значит трекер вернул страницу логина/ошибки.
+                if (bytes.length === 0 || bytes[0] !== 0x64) {
+                    throw new Error('Трекер не отдал torrent-файл. Проверьте, что вы залогинены на сайте.');
+                }
+                return sendResponse({ success: true, data: Array.from(bytes) });
             })
             .catch(error => sendResponse({ success: false, error: error.message }));
         return true;
