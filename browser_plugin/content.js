@@ -269,10 +269,25 @@ async function handleTorrentUpload(torrentUrl) {
       throw new Error(`Ошибка загрузки: ${uploadResult.error}`);
     }
 
+    // 5. Добавляем торрент напрямую в qBittorrent (если включено в настройках)
+    statusMsg.textContent = 'Добавление в qBittorrent...';
+    const qbitResult = await sendMessageToBackground({
+      action: 'addToQbittorrent',
+      torrentData,
+      filename,
+      directory: selectedDir
+    });
+
+    if (!qbitResult.success) {
+      throw new Error(`Торрент сохранён на сервере, но qBittorrent вернул ошибку: ${qbitResult.error}`);
+    }
+
     // Сохраняем выбранную директорию после успешной загрузки
     saveLastSelectedDirectory(selectedDir);
 
-    statusMsg.textContent = `Торрент успешно загружен в "${selectedDir}"`;
+    statusMsg.textContent = qbitResult.skipped
+      ? `Торрент успешно загружен в "${selectedDir}"`
+      : `Торрент загружен в "${selectedDir}" и добавлен в qBittorrent`;
     statusMsg.style.background = '#4CAF50';
 
     // Удаляем сообщение через 3 секунды

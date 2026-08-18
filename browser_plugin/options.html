@@ -33,13 +33,19 @@
       margin-bottom: 5px;
       font-weight: bold;
     }
-    input[type="text"] {
+    input[type="text"],
+    input[type="password"],
+    textarea {
       width: 100%;
       padding: 8px;
       font-size: 14px;
       border: 1px solid #ddd;
       border-radius: 4px;
       box-sizing: border-box;
+    }
+    textarea {
+      font-family: monospace;
+      resize: vertical;
     }
     .buttons {
       display: flex;
@@ -94,6 +100,30 @@
     <div class="form-group">
       <label for="token">Токен для аутентификации:</label>
       <input type="text" id="token" placeholder="Введите токен">
+    </div>
+    <h1>qBittorrent (необязательно)</h1>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="qbitEnabled">
+        Добавлять торренты напрямую в qBittorrent через Web API
+      </label>
+    </div>
+    <div class="form-group">
+      <label for="qbitUrl">URL Web-интерфейса qBittorrent:</label>
+      <input type="text" id="qbitUrl" placeholder="https://tnas.tnas.link:5443/qbittorrent/">
+    </div>
+    <div class="form-group">
+      <label for="qbitUser">Логин:</label>
+      <input type="text" id="qbitUser" placeholder="Логин qBittorrent">
+    </div>
+    <div class="form-group">
+      <label for="qbitPassword">Пароль:</label>
+      <input type="password" id="qbitPassword" placeholder="Пароль qBittorrent">
+    </div>
+    <div class="form-group">
+      <label for="qbitPathMap">Соответствие директорий путям на NAS (по одной на строку):</label>
+      <textarea id="qbitPathMap" rows="3" placeholder="video=/Volume2/video&#10;soft=/Volume2/public/soft"></textarea>
+      <small>Формат: директория=путь. Для выбранной директории «video/movies» путь сохранения будет «/Volume2/video/movies». Строки без соответствия — путь по умолчанию qBittorrent.</small>
     </div>
     <div class="buttons">
       <button id="resetBtn" class="reset-btn">Восстановить по умолчанию</button>
